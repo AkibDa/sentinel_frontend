@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Link as LinkIcon, ArrowRight, FileVideo, FileImage, Mail, MessageSquare, Send, ShieldAlert, ShieldCheck, Activity } from 'lucide-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useStore } from '../store/useStore';
 import { apiService } from '../services/apiService';
+import { calculateFileHash } from '../lib/crypto';
 import { cn } from '../lib/utils';
 import { GooeyText } from './ui/gooey-text-morphing';
 import { GlassEffect, GlassButton } from './ui/liquid-glass';
@@ -13,22 +15,39 @@ import { Card } from './ui/card';
 
 export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<'upload' | 'link' | 'text'>('upload');
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'fingerprinting' | 'uploading'>('idle');
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { publicKey } = useWallet();
   const { setLoading, setResult, setTextResult, setError, isLoading, loadingMessage, textResult, reset } = useStore();
 
   const handleFileUpload = async (file: File) => {
     try {
+      if (!publicKey) {
+        setError('Please connect your Solana wallet before uploading.');
+        return;
+      }
+
+      setUploadStatus('fingerprinting');
+      setLoading(true, 'Generating secure fingerprint...');
+      const fileHash = await calculateFileHash(file);
+      console.log('Fingerprint generated:', fileHash);
+
+      setUploadStatus('uploading');
       setLoading(true, 'Uploading file...');
-      const res = await apiService.analyzeFile(file);
+      const walletAddress = publicKey.toBase58();
+      const res = await apiService.analyzeFile(file, fileHash, walletAddress);
+
       setLoading(true, 'Running deepfake analysis...');
       await new Promise((r) => setTimeout(r, 1500));
       setResult(res);
+      setUploadStatus('idle');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
+      setUploadStatus('idle');
     }
   };
 
@@ -279,10 +298,17 @@ export default function LandingPage() {
                         )}
                       </div>
 
-                      <div className="text-center space-y-1">
+                      <div className="text-center space-y-1 z-10">
                         <p className="text-sm text-white/65 font-medium">Drop media here or click to browse</p>
                         <p className="text-[10px] uppercase tracking-widest text-white/20">Supports MP4, MOV, JPG, PNG</p>
                       </div>
+
+                      {uploadStatus !== 'idle' && (
+                        <div className="text-xs text-emerald-400 font-medium z-10 pt-2 animate-pulse flex items-center justify-center">
+                          {uploadStatus === 'fingerprinting' && "Generating secure fingerprint..."}
+                          {uploadStatus === 'uploading' && "Uploading to SentinelAI core..."}
+                        </div>
+                      )}
 
                       <div className="absolute bottom-4 flex gap-4 opacity-20">
                         <FileVideo size={16} />

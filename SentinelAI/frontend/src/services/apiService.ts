@@ -1,5 +1,4 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { calculateFileHash } from '../lib/crypto';
 /**
  * SentinelAI API Service
  * Handles communication with FastAPI, n8n, and Gemini API.
@@ -94,11 +93,10 @@ export const apiService = {
   /**
    * Pathway A: Local Upload
    */
-  analyzeFile: async (file: File): Promise<AnalysisResult> => {
+  analyzeFile: async (file: File, fileHash: string, walletAddress?: string): Promise<AnalysisResult> => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const fileHash = await calculateFileHash(file);
     const endpoint = file.type.startsWith('video/') ? '/analyze_video' : '/analyze_image';
 
     const response = await fetch(`${FASTAPI_URL}${endpoint}`, {
@@ -106,6 +104,7 @@ export const apiService = {
       body: formData,
       headers: {
         'X-File-Hash': fileHash,
+        ...(walletAddress ? { 'X-Wallet-Address': walletAddress } : {}),
       },
     });
 
