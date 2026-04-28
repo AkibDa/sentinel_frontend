@@ -266,19 +266,20 @@ export const apiService = {
       },
     });
 
-    const contentType = response.headers.get('content-type');
+    const contentType = response.headers.get('content-type') || '';
     if (!response.ok) {
-      if (contentType && contentType.includes('text/html')) {
+      if (contentType.includes('text/html')) {
         throw new Error('Backend is currently offline or unreachable (Server returned HTML). Check your ngrok tunnel.');
       }
       const detail = await response.text().catch(() => '');
       throw new Error(`History fetch failed (${response.status}): ${response.statusText}${detail ? ` - ${detail}` : ''}`);
     }
 
-    if (!contentType || !contentType.includes('application/json')) {
+    if (!contentType.includes('application/json')) {
       const text = await response.text();
-      console.error('[API] Expected JSON but got:', text.slice(0, 200));
-      throw new Error('Server returned an invalid response format (Expected JSON).');
+      const snippet = text.slice(0, 100).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      console.error('[API] Expected JSON but got:', text.slice(0, 500));
+      throw new Error(`Invalid response format (Expected JSON, got ${contentType}). Response snippet: "${snippet}..."`);
     }
 
     return response.json();
