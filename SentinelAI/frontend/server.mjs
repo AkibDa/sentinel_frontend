@@ -1,10 +1,11 @@
-// testing edit
 import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 
 const PORT = Number(process.env.PORT || 3000);
+
+// Pull the AWS IP from the .env file safely
 const BACKEND_URL = (process.env.VITE_BACKEND_PROXY_TARGET || "http://127.0.0.1:8000").replace(/\/+$/, '');
 
 async function startServer() {
@@ -15,6 +16,7 @@ async function startServer() {
       let subPath = req.originalUrl.replace(/^\/api/, "");
       if (!subPath.startsWith('/')) subPath = '/' + subPath;
       
+      // Construct the URL safely using concatenation to avoid trailing slash issues
       const targetUrl = new URL(BACKEND_URL + subPath);
       
       console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${targetUrl.href}`);
@@ -23,7 +25,9 @@ async function startServer() {
 
       for (const [key, value] of Object.entries(req.headers)) {
         const lowerKey = key.toLowerCase();
-        if (!value || lowerKey === "host" || lowerKey === "content-length" || lowerKey === "connection" || lowerKey === "accept-encoding") {
+        
+        // Strip headers that cause CORS/Host mismatches, BUT keep "content-length"
+        if (!value || lowerKey === "host" || lowerKey === "connection" || lowerKey === "accept-encoding" || lowerKey === "origin" || lowerKey === "referer") {
           continue;
         }
 
@@ -38,16 +42,20 @@ async function startServer() {
 
       headers.set("ngrok-skip-browser-warning", "true");
       headers.set("Accept", "application/json");
-      headers.set("Host", targetUrl.host);
 
       const requestInit = {
         method: req.method,
         headers,
       };
 
+      // BUFFER THE BODY instead of streaming it. 
+      // This prevents the chunked encoding 500 error in FastAPI.
       if (req.method !== "GET" && req.method !== "HEAD") {
-        requestInit.body = req;
-        requestInit.duplex = "half";
+        const chunks = [];
+        for await (const chunk of req) {
+          chunks.push(chunk);
+        }
+        requestInit.body = Buffer.concat(chunks);
       }
 
       const upstream = await fetch(targetUrl, requestInit);
@@ -65,9 +73,8 @@ async function startServer() {
 
       const body = await upstream.arrayBuffer();
       
-      // If we got a 404, log the body to see what it says
-      if (upstream.status === 404) {
-        console.log(`[Proxy] 404 Body: ${Buffer.from(body).toString().slice(0, 200)}`);
+      if (upstream.status >= 400) {
+        console.log(`[Proxy] Error Body: ${Buffer.from(body).toString().slice(0, 200)}`);
       }
 
       res.send(Buffer.from(body));
