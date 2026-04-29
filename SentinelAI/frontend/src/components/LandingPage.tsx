@@ -30,7 +30,6 @@ export default function LandingPage() {
       setUploadStatus('fingerprinting');
       setLoading(true, 'Generating secure fingerprint...');
       const fileHash = await calculateFileHash(file);
-      console.log('Fingerprint generated:', fileHash);
 
       setUploadStatus('uploading');
       setLoading(true, 'Uploading file and anchoring integrity proof...');
