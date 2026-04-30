@@ -9,7 +9,7 @@ Built using modern web technologies, this interface allows users to interact wit
 
 ## 🌐 Live Demo
 
-*(Add your deployed frontend link here if available)*
+(https://sentinelaibycodenewbies.vercel.app/)
 
 ---
 
