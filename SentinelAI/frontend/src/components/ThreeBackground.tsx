@@ -95,11 +95,13 @@ export default function ThreeBackground() {
   return (
     <div className="fixed inset-0 -z-10 bg-black">
       <Canvas
-        dpr={lowPowerMode ? [0.8, 1] : [1, 1.25]}
-        gl={{ antialias: false, alpha: false, powerPreference: 'high-performance' }}
-        performance={{ min: 0.5 }}
-        camera={{ position: [0, 0, 5], fov: 75 }}
-      >
+          dpr={[1, 1.5]} // Increase slightly for the "Aether Edition" look
+          gl={{ 
+            antialias: true, 
+            alpha: true, // Set to true to allow the CSS ambient orbs to show through
+            powerPreference: 'high-performance' 
+          }}
+        >
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />
         <AnimatedSpheres />
