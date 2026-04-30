@@ -141,8 +141,6 @@ You can deploy the frontend using:
 ---
 
 ## 👨‍💻 Authors
-
-* Your Name (add GitHub profile)
 * Team SentinelAI
 
 ---
