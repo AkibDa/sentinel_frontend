@@ -467,13 +467,15 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="pt-8 mt-auto w-full">
-              <GlassButton
+             <GlassButton
                 onClick={() => {
-                  window.location.href = 'mailto:support@sentinelai.demo';
+                  window.location.href = 'mailto:supportatsentinelai@gmail.com';
                 }}
-                className="w-full py-3 bg-white/[0.03] border-white/10 hover:border-emerald-500/50 transition-all"
+                className="w-full py-3 bg-white/[0.03] border border-white/10 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all duration-300 ease-in-out group rounded-xl overflow-hidden relative"
               >
-                <span className="text-[10px] uppercase tracking-widest text-white/60">Send Email</span>
+                <span className="text-[10px] uppercase tracking-widest text-white/60 group-hover:text-emerald-400 transition-colors duration-300 relative z-10">
+                  Send Email
+                </span>
               </GlassButton>
             </div>
           </GlassEffect>
@@ -502,11 +504,13 @@ export default function LandingPage() {
                 className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/10 focus:outline-none focus:border-emerald-500/30 transition-colors resize-none mb-6"
               />
               <div className="mt-auto w-full">
-                <GlassButton 
-                  className="w-full py-3 bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"
+               <GlassButton 
+                  className="w-full py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all duration-300 ease-in-out rounded-xl overflow-hidden relative"
                   style={{ boxShadow: 'none' }}
                 >
-                  <span className="text-[10px] uppercase tracking-widest">Submit Feedback</span>
+                  <span className="text-[10px] uppercase tracking-widest relative z-10 transition-colors duration-300">
+                    Submit Feedback
+                  </span>
                 </GlassButton>
               </div>
             </form>
