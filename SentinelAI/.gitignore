@@ -8,7 +8,7 @@ env/
 venv/
 *.env
 
-node_modules/ 
+
 # Jupyter Notebook
 .ipynb_checkpoints/
 
